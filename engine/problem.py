@@ -10,12 +10,12 @@ class Problem:
     self.dimension = dimension
 
   def anySolution(self):       # Get any solution
-    #solution = [0] * self.dimension
-    solution = [3, 5, 8, 2, 25]
-    #for j in range(self.dimension):
-    #  domain      = self.domain(j)
-    #  rand_index  = rnd.randint(0, len(domain)-1)
-    #  solution[j] = domain[rand_index] # Assign random
+    solution = [0] * self.dimension
+    #solution = [3, 5, 8, 2, 25]
+    for j in range(self.dimension):
+      domain      = self.domain(j)
+      rand_index  = rnd.randint(0, len(domain)-1)
+      solution[j] = domain[rand_index] # Assign random
     return solution
 
 ## INTERFACE ###############################
