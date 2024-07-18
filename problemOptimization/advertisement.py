@@ -85,13 +85,13 @@ class Advertisements(Problem):  # T2-advertisements
     fit_min = self.fit_min(solution)
 
     scalarized_fit = 0
-    size_w         = len(self.weights)
-    for p in range(size_w):
-      for q in range(size_w):
-        if p != q:
-          term_max = (fit_max / self.bestMax) * self.weights[0]
-          term_min = (c_hat - fit_min) / (c_hat - self.bestMin) * self.weights[1]
-          scalarized_fit += term_max + term_min
+    #size_w         = len(self.weights)
+    #for p in range(size_w):
+    #  for q in range(size_w):
+    #    if p != q:
+    term_max = (fit_max / self.bestMax) * self.weights[0]
+    term_min = (c_hat - fit_min) / (c_hat - self.bestMin) * self.weights[1]
+    scalarized_fit += term_max + term_min
 
     return scalarized_fit
   
