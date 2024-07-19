@@ -11,7 +11,7 @@ class Problem:
 
   def anySolution(self):       # Get any solution
     solution = [0] * self.dimension
-    #solution = [3, 5, 8, 2, 25]
+    #solution = [9, 3, 7, 4, 5]
     for j in range(self.dimension):
       domain      = self.domain(j)
       rand_index  = rnd.randint(0, len(domain)-1)

@@ -41,7 +41,7 @@ def getMedianMinMax(path):
         #median_minmax[i].append(min(all_minmaxs_join[i][0]))
         #median_minmax[i].append(max(all_minmaxs_join[i][1]))
         for j in range(size2):
-            median_minmax[i].append(statistics.mean(all_minmaxs_join[i][j]))
+            median_minmax[i].append(statistics.median(all_minmaxs_join[i][j]))
         #    #all_minmaxs_join[i][j].sort(reverse=True)
 
     return median_minmax

@@ -191,6 +191,8 @@ class Swarm():
     self.initGBest()  # Initialize global best
     self.findGBest()  # Find global best
 
+    #self.bestToConsole()
+
 # Run optimization
   def evolve(self):
     while self.currentIter <= self.maxIter:

@@ -13,6 +13,7 @@ def getMinMax(path, dimension):
             movement = [ float(value) for value in line.strip("[]\n").split(",") ]
             #print(movement)
             
+
             for j in range(dimension):
                 mov = movement[j]
                 if mov < minmax[j][0]:     # Set min
@@ -24,6 +25,6 @@ def getMinMax(path, dimension):
     
     return minmax
 
-#minmaxMovement = getMinMax("swarm_logs/mov_logPSO-ads.txt", 5)
-#minmaxMovement = getMinMax("swarm_logs/mov_logDHO-ads.txt", 5)
+#minmaxMovement = getMinMax("../swarm_logs/mov_logPSO-ads.txt", 5)
+##minmaxMovement = getMinMax("swarm_logs/mov_logDHO-ads.txt", 5)
 #print(minmaxMovement)
