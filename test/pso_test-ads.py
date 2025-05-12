@@ -4,7 +4,7 @@ import sys
 sys.path.append(str(Path(__file__).parent.parent))
 from problemOptimization.advertisement import Advertisements       # Problem to solve
 from algorithmSwarm.pso import PSO                                 # Algorithm to use
-from util.fitGBest import gBestGraph                               # Show gbest movement
+from util.fitGBestPlot import gBestGraph                           # Show gbest movement
 from util.pareto import paretoGraph                                # Show data results 
 
 

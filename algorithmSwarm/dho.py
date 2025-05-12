@@ -35,7 +35,6 @@ class DHO(Swarm):
     self.gSuccesor = Agent(self.problem.dimension)      # Second g best
     self.move      = self.moveBasedLeader               # Default
 
-
   # HELPER METHOD ###########################################################
   def isBetterThanGSuccesor(self, agent):
     return self.problem.isFirstBetterSecond(agent.pBest, self.gSuccesor.position)

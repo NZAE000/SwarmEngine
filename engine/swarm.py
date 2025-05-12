@@ -185,6 +185,9 @@ class Swarm():
         if self.isFeasible(agent):
           break
       self.swarm.append(agent)
+    
+    # Initiaization in the specific algorithm.
+    self.initAllAgents()
 
 # INITIALIZE GLOBAL BEST
   def initGlobalBest(self):
@@ -203,7 +206,7 @@ class Swarm():
       self.bestToFile()               # Log global best
       self.currentIter += 1           # Advance
 
-# Update all agents
+# Update all agents (by default. Others algorithms can be override this method).
   def updateAgents(self):
     #print("\niter: ", self.currentIter)
     for agent in self.swarm:
@@ -291,7 +294,11 @@ class Swarm():
 
 ## INTERFACE ###############################
 
-# UPDATE PARAMETERS
+# INIT ALL AGENTS.
+  def initAllAgents(self):
+    pass
+
+# UPDATE PARAMETERS.
   def updateParams(self):
     pass
 
@@ -299,12 +306,12 @@ class Swarm():
   def moveAgent(self, motion_log):
     pass
 
-# SEARCH G (Default)
+# SEARCH G (Default).
   def findGBest(self):
     for i in range(self.nAgents):
       if self.isBetterThanGBest(self.swarm[i]):
-        self.gBest.copy(self.swarm[i]) # Update GBest
+        self.gBest.copy(self.swarm[i]) # Update GBest.
         
 # Reset global best (default)
   def initGBest(self):
-    self.gBest.copy(self.swarm[0]) # Copy first feasible agent
+    self.gBest.copy(self.swarm[0]) # Copy first feasible agent.
