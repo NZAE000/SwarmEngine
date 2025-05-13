@@ -46,7 +46,7 @@ def getMedianMinMax(path):
 
     return median_minmax
 
-
+# Displace in abs equals limits.
 def displacement(minmaxs):
     minmaxs_disp = []
     for minmax in minmaxs:
@@ -55,6 +55,7 @@ def displacement(minmaxs):
         media = (min + max) / 2
         minmaxs_disp.append([-media, media])
     return minmaxs_disp
+
 # 3.5 = 1 
 # 7   = x
 #

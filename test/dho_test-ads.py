@@ -10,9 +10,9 @@ from util.pareto import paretoGraph                                # Show data r
 
 ###### MAIN ####################################
 try:
-  swarm = DHO(Advertisements(), 100, 5)
+  swarm = DHO(Advertisements(), 100, 10)
   swarm.prepare(n_exec=300)
-  swarm.solve(n_exec=100)
+  swarm.solve(n_exec=50)
   swarm.bestToConsole()
 
   gBestGraph(swarm.path_gbestLog)

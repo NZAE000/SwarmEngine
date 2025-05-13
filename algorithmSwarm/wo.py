@@ -101,7 +101,7 @@ class WO(Swarm):
     # The female walrus is influenced by male walrus (Malet i,j) and the lead walrus (Xtbest). As the process of iteration, the female walrus is gradually influenced less by the mate and more by the leader.
     def moveFemalesWalrus(self, female_w, motion_log):
         for j in range(self.problem.dimension):
-            next_pos = female_w.position[j] + self.alfa * (self.current_male.position[j] - female_w.position[j]) + (1 - self.alfa) * (self.gBest.position[j] -  female_w.position[j])
+            next_pos = female_w.position[j] + self.alfa * (self.current_male.position[j] - female_w.position[j]) + (1 - self.alfa) * (self.gBest.position[j] - female_w.position[j])
             female_w.position[j] = self.normalize(next_pos, j)
             motion_log.append(next_pos)
 
@@ -148,6 +148,7 @@ class WO(Swarm):
             X1 = self.gBest.position[j] - a1 * b1 * abs(self.gBest.position[j] - walrus.position[j])
             X2 = self.swarm[1].position[j] - a2 * b2 * abs(self.swarm[1].position[j] - walrus.position[j])
             next_pos = (X1 + X2) / 2
+            print("X1:", X1, "X2:", X2)
             walrus.position[j] = self.normalize(next_pos, j)
             motion_log.append(next_pos)
 
@@ -155,8 +156,13 @@ class WO(Swarm):
 
 # INIT ALL
     def initAllAgents(self):
-        self.n_teen   = int(0.10 * self.nAgents)    # 10% population.
-        self.n_adult  = self.nAgents - self.n_teen  # 90% population.
+        # Clear all walruses.
+        self.teens_w.clear()
+        self.females_w.clear()
+        self.males_w.clear()
+
+        self.n_teen   = int(0.10 * self.nAgents)         # 10% population.
+        self.n_adult  = self.nAgents - self.n_teen       # 90% population.
         self.n_female = self.n_male = self.n_adult // 2  # 45% each.
 
         # Create lists with references (without copies) to swarm agents.
@@ -168,7 +174,8 @@ class WO(Swarm):
     def updateAgents(self):
         #print("\niter: ", super().currentIter)
         #print("aca")
-        if self.danger_signal >= 1: # Exploration phase.
+        if abs(self.danger_signal) >= 1: # Exploration phase.
+            print("aca1")
             # Update new position of each walrus.
             # Choose vigilantes randomly and set beta.
             self.vigilant1 = self.swarm[rnd.randint(0, self.nAgents-1)]
@@ -180,29 +187,32 @@ class WO(Swarm):
                 #print("after  => pos: ", agent.position, " best_pos: ", agent.pBest, "\n")
         else: # Exploitation phase.
             if self.safety_signal >= 0.5: # (1) Roosting behavior: The male, female and juvenile walruses are our classification of population members. They have different ways of renewing their position.
+                print("aca2")
                 # Step 1: Redistribution of male walruses.
                 self.move = self.moveMalesWalrus
                 for male_w in self.males_w:
                     self.updateOne(male_w)
-
+                print("aca3")
                 # Step 2: Position update of female walruses.
                 self.move = self.moveFemalesWalrus
                 for i in range(self.n_female):
                     self.current_male = self.males_w[i]
                     self.updateOne(self.females_w[i])
-
+                print("aca4")
                 # Step 3: Position update of juvenile walruses.
                 self.move = self.moveTeenWalrus
                 for teen_w in self.teens_w:
                     self.updateOne(teen_w)
 
             else: # (2) Foraging behavior: Underwater foraging includes fleeing and gathering behaviors.
-                if (self.danger_signal >= 0.5): # Fleeing behavior.
+                if abs(self.danger_signal) >= 0.5: # Fleeing behavior.
+                    print("aca5")
                     self.move = self.moveFleeing
                     for walrus in self.swarm:
                         self.updateOne(walrus)
 
                 else: # Gathering behavior.
+                    print("aca6")
                     self.move = self.moveGathering
                     self.beta = 1 - 1 / ( 1 + math.exp( -(self.currentIter - (self.maxIter/2)) / self.maxIter) * 10 )
                     for walrus in self.swarm:
@@ -216,8 +226,8 @@ class WO(Swarm):
 # UPDATE PARAMETERS
     def updateParams(self):
         self.alfa          = 1 - (self.currentIter / self.maxIter)
-        self.A_dng_factor  = 2*self.alfa
-        self.R_dng_factor  = 2* (rnd.random() - 1)
+        self.A_dng_factor  = 2 * self.alfa
+        self.R_dng_factor  = 2 * (rnd.random() - 1)
         self.danger_signal = self.A_dng_factor * self.R_dng_factor
         self.safety_signal = rnd.random()
         #self.move = self.chooseMovement()

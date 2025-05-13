@@ -94,7 +94,7 @@ class Advertisements(Problem):  # T2-advertisements
     term_min = (c_hat - fit_min) / (c_hat - self.bestMin) * self.weights[1]
     scalarized_fit += term_max + term_min
 
-    return scalarized_fit
+    return fit_max
   
   def isFeasible(self, solution): # Evaluate constraints
     c1_okey = self.constraints["c1"](solution[0], solution[1])

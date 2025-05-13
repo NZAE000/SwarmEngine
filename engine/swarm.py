@@ -34,7 +34,7 @@ class Swarm():
     # Constants needed for the problem !!
     self.minmax_movs      = []
     self.minmax_movs_disp = []
-    self.normalize_consts = []
+    self.normalized_consts = []
 
 # Loggers and writers ######################################################
     # File paths
@@ -84,14 +84,14 @@ class Swarm():
       return self.problem.maxDomain(index) if sigmoid > rnd.random() else self.problem.minDomain(index)
     
     # More than 2 domain values
-    #print("index: ", index)
-    #print("no trans: ", x)
+    print("index: ", index)
+    print("no trans: ", x)
     x_trans         = self.transform(x, index)
-    #print("trans: ", x_trans)
+    print("trans: ", x_trans)
     uniform_val     = 1 / size_domain
-    constant        = self.normalize_consts[index]
+    constant        = self.normalized_consts[index]
     sigmoid         = 1 / (1 + math.pow(math.e, -constant*x_trans)) # Sigmoid [0, 1]
-
+    print("mmm")
     sum    = uniform_val
     chosen = 0
 
@@ -125,17 +125,17 @@ class Swarm():
 
 # PREPARE CONSTANTS TO HELP SOLVE PROBLEM
   def prepare(self, n_exec=30):
-    self.normalize = self.randNormalize # Set normalize to random
+    self.normalize = self.randNormalize # Set random normalize to find min and max movements for each variable (dimensions).
     self.initWriters()
    
     for _ in range(n_exec): # Write min and max movement for each varable(position) of problem.
       self.solve()
       self.writeMinMaxData(getMinMax(self.path_movLog, self.problem.dimension))
     
-    # Set min and max movement(median) for each varable(position) of problem of all excecutions.
-    self.minmax_movs      = getMedianMinMax(self.path_minmaxData)
-    self.minmax_movs_disp = displacement(self.minmax_movs)      # Apply displacement
-    self.normalize_consts = getConstants(self.minmax_movs_disp) # Set constants to use in the normalize
+    # Calculate min and max movement(median) for each varable(position) of problem of all excecutions.
+    self.minmax_movs       = getMedianMinMax(self.path_minmaxData)
+    self.minmax_movs_disp  = displacement(self.minmax_movs)      # Apply displacement
+    self.normalized_consts = getConstants(self.minmax_movs_disp) # Set constants to use in the normalize
     self.writeConstantData()
     
     self.normalize = self.sigmoidNormalize # Restore
@@ -279,7 +279,7 @@ class Swarm():
   def writeConstantData(self):
     self.constantWriter.write(f"{self.minmax_movs}\n")
     self.constantWriter.write(f"{self.minmax_movs_disp}\n")
-    self.constantWriter.write(f"{self.normalize_consts}\n")
+    self.constantWriter.write(f"{self.normalized_consts}\n")
 
 # Initialize writers
   def initWriters(self):
