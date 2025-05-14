@@ -130,6 +130,7 @@ class Swarm():
    
     for _ in range(n_exec): # Write min and max movement for each varable(position) of problem.
       self.solve()
+      print("ACA?")
       self.writeMinMaxData(getMinMax(self.path_movLog, self.problem.dimension))
     
     # Calculate min and max movement(median) for each varable(position) of problem of all excecutions.

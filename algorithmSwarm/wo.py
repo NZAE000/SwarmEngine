@@ -128,6 +128,7 @@ class WO(Swarm):
             safety_pos    = self.gBest.position[j] + teen_w.position[j] * levy
             distress_coef = rnd.random() # Distress coefficient of juvenile walrus.
             next_pos      = (safety_pos - teen_w.position[j]) * distress_coef
+            print("NEXT: ", next_pos)
             teen_w.position[j] = self.normalize(next_pos, j)
             motion_log.append(next_pos)
 
@@ -169,6 +170,15 @@ class WO(Swarm):
         self.teens_w   = self.swarm[:self.n_teen]
         self.females_w = self.swarm[self.n_teen:self.n_teen + self.n_female]
         self.males_w   = self.swarm[self.n_teen + self.n_female:self.n_teen + self.n_female + self.n_male]
+
+        print("swarm:", self.swarm)
+        print("teens:", self.teens_w)
+        print("females:", self.females_w)
+        print("males:", self.males_w)
+        print("n_teen:", len(self.teens_w))
+        print("n_adult:", self.n_adult)
+        print("n_female:", self.n_female)
+        print("n_male:", self.n_male)
 
 # UPDATE ALL
     def updateAgents(self):
