@@ -130,11 +130,12 @@ class Swarm():
    
     for _ in range(n_exec): # Write min and max movement for each varable(position) of problem.
       self.solve()
-      print("ACA?")
+      #print("ACA?")
       self.writeMinMaxData(getMinMax(self.path_movLog, self.problem.dimension))
     
+    self.minmaxWriter.close()
     # Calculate min and max movement(median) for each varable(position) of problem of all excecutions.
-    self.minmax_movs       = getMedianMinMax(self.path_minmaxData)
+    self.minmax_movs       = getAVGMinMax(self.path_minmaxData)
     self.minmax_movs_disp  = displacement(self.minmax_movs)      # Apply displacement
     self.normalized_consts = getConstants(self.minmax_movs_disp) # Set constants to use in the normalize
     self.writeConstantData()
@@ -224,19 +225,22 @@ class Swarm():
     while True:
       backupAgent.copy(agent)
       self.moveAgent(backupAgent, motion_log)
-      self.motionTofile(motion_log)      # Log movement
+      self.logMotion(motion_log)      # Log movement
       motion_log.clear()
 
       if self.isFeasible(backupAgent):
-        #print("feasible")
+        print("feasible")
         break
       else:
-        #print("no feasible")
+        print("NO feasible")
         self.times_wrong += 1
 
     # Update pBest
     if self.isBetterThanPBest(backupAgent):
       backupAgent.updatePBest()
+      print("pbest updated")
+    else:
+      print("pbest NOT updated")
 
     # Update agent
     agent.copy(backupAgent)
@@ -264,7 +268,7 @@ class Swarm():
     self.agentLogger.write(f"\tpos: {agent.position} - best_pos: {self.agentLog(agent)}\n")
 
 # Log motion to file
-  def motionTofile(self, motion):
+  def logMotion(self, motion):
     self.movLogger.write(f"{motion}\n")
 
 # Global best writer
@@ -312,6 +316,9 @@ class Swarm():
     for i in range(self.nAgents):
       if self.isBetterThanGBest(self.swarm[i]):
         self.gBest.copy(self.swarm[i]) # Update GBest.
+        print("gbest updated")
+      else:
+        print("gbest NOT updated")
         
 # Reset global best (default)
   def initGBest(self):

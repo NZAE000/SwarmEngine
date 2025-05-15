@@ -58,10 +58,11 @@ class WO(Swarm):
     #    else: # Exploitation phase.
     #        #if ()
 
-    ## Exploration.
+    ## Exploration: When risk factors are too high, walrus herds will migrate to areas more suitable for population survival.
     def moveBasedMigration(self, walrus, motion_log):
+        r3 = rnd.random()
         for j in range(self.problem.dimension):
-            migration_step = (self.vigilant1.position[j] - self.vigilant2.position[j]) * self.beta * math.pow(rnd.random(), 2)
+            migration_step = (self.vigilant1.position[j] - self.vigilant2.position[j]) * self.beta * math.pow(r3, 2)
             next_pos = walrus.position[j] + migration_step
             walrus.position[j] = self.normalize(next_pos, j)
             motion_log.append(next_pos)
@@ -106,7 +107,7 @@ class WO(Swarm):
             motion_log.append(next_pos)
 
     def normal_distr(self, mean, std):
-        return np.random.normal(mean, std, 1)[0]
+        return float(np.random.normal(mean, std, 1)[0])
     
     def factorial(self, x):
         """
@@ -119,6 +120,8 @@ class WO(Swarm):
         return gamma(x + 1)
     
     def levyFlight(self):
+        #sigma = self.stdX
+        #u     = 
         return 0.05 * (self.normal_distr(0, self.stdX) / math.pow(abs(self.normal_distr(0, self.stdY)), 1/self.lmda))
 
     # Juvenile walruses at the edge of the population are often targeted by killer whales and polar bears. Therefore, juvenile walruses need to update their current position to avoid predation.
@@ -128,7 +131,6 @@ class WO(Swarm):
             safety_pos    = self.gBest.position[j] + teen_w.position[j] * levy
             distress_coef = rnd.random() # Distress coefficient of juvenile walrus.
             next_pos      = (safety_pos - teen_w.position[j]) * distress_coef
-            print("NEXT: ", next_pos)
             teen_w.position[j] = self.normalize(next_pos, j)
             motion_log.append(next_pos)
 
@@ -190,7 +192,6 @@ class WO(Swarm):
             # Choose vigilantes randomly and set beta.
             self.vigilant1 = self.swarm[rnd.randint(0, self.nAgents-1)]
             self.vigilant2 = self.swarm[rnd.randint(0, self.nAgents-1)]
-            self.beta = 1 - 1 / ( 1 + math.exp( -(self.currentIter - (self.maxIter/2)) / self.maxIter) * 10 )
             self.move = self.moveBasedMigration
             for walrus in self.swarm:
                 self.updateOne(walrus)
@@ -224,7 +225,6 @@ class WO(Swarm):
                 else: # Gathering behavior.
                     print("aca6")
                     self.move = self.moveGathering
-                    self.beta = 1 - 1 / ( 1 + math.exp( -(self.currentIter - (self.maxIter/2)) / self.maxIter) * 10 )
                     for walrus in self.swarm:
                         self.updateOne(walrus)
 
@@ -236,8 +236,9 @@ class WO(Swarm):
 # UPDATE PARAMETERS
     def updateParams(self):
         self.alfa          = 1 - (self.currentIter / self.maxIter)
+        self.beta          = 1 - 1 / ( 1 + math.exp( -(self.currentIter - (self.maxIter/2)) / self.maxIter) * 10 )
         self.A_dng_factor  = 2 * self.alfa
-        self.R_dng_factor  = 2 * (rnd.random() - 1)
+        self.R_dng_factor  = 2 * rnd.random() - 1
         self.danger_signal = self.A_dng_factor * self.R_dng_factor
         self.safety_signal = rnd.random()
         #self.move = self.chooseMovement()

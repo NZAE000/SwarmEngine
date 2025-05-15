@@ -1,19 +1,17 @@
 import statistics
 
-def getMedianMinMax(path):
+def getAVGMinMax(path):
     all_minmaxs = []
 
-    with open(path, 'r') as fileReaer:
-        line = fileReaer.readline()
+    with open(path, 'r') as fileReader:
         # Cast to int and store in list of lists of lists
-        while line:
+        for idx, line in enumerate(fileReader):
             minmaxs_prev = line.strip("[]\n").split("], [")
             minmaxs = []
             for minmax in minmaxs_prev:
                 minmaxs.append([ float(value) for value in minmax.split(",") ])
 
             all_minmaxs.append(minmaxs)
-            line = fileReaer.readline()
     
 # Initialize all_minmaxs_join according to the size of an element
     all_minmaxs_join = []
