@@ -16,8 +16,8 @@ try:
   swarm.solve(n_exec=30)
   swarm.bestToConsole()
 
-  gBestGraph(swarm.path_gbestLog)
-  paretoGraph(swarm.path_gbestData)
+  #gBestGraph(swarm.path_gbestLog)
+  #paretoGraph(swarm.path_gbestData)
 
 except Exception as e:
   print(f"{e} \nCaused by {e.__cause__}")

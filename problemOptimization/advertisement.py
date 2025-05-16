@@ -100,7 +100,7 @@ class Advertisements(Problem):  # T2-advertisements
     c1_okey = self.constraints["c1"](solution[0], solution[1])
     c2_okey = self.constraints["c2"](solution[2], solution[3])
     c3_okey = self.constraints["c3"](solution[2], solution[4])
-    #print(c1_okey, c2_okey, c3_okey)
+    print("Faseable?:", c1_okey, c2_okey, c3_okey)
     return (c1_okey and c2_okey and c3_okey)
   
   def isFirstBetterSecond(self, solution1, solution2):

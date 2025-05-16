@@ -49,6 +49,7 @@ class WO(Swarm):
         self.stdY = 1
 
         self.move = self.moveBasedMigration # Default callable.
+        self.gSecondBest = Agent(self.problem.dimension)      # Second g best
 
     #def chooseMovement(self):
     #    
@@ -57,6 +58,19 @@ class WO(Swarm):
     #        print()
     #    else: # Exploitation phase.
     #        #if ()
+
+    # HELPER METHODS ###########################################################
+    def isBetterThanGSecond(self, agent):
+        return self.problem.isFirstBetterSecond(agent.pBest, self.gSecondBest.position)
+
+    def findGFirst(self):
+        super().findGBest()
+
+    def findGSecond(self):
+        for i in range(self.nAgents):
+            if self.isBetterThanGSecond(self.swarm[i]) and not self.isBetterThanGBest(self.swarm[i]):
+                self.gSecondBest.copy(self.swarm[i])
+    ############################################################################
 
     ## Exploration: When risk factors are too high, walrus herds will migrate to areas more suitable for population survival.
     def moveBasedMigration(self, walrus, motion_log):
@@ -149,9 +163,9 @@ class WO(Swarm):
             b1 = math.tan(rnd.uniform(0, math.pi))
             b2 = math.tan(rnd.uniform(0, math.pi))
             X1 = self.gBest.position[j] - a1 * b1 * abs(self.gBest.position[j] - walrus.position[j])
-            X2 = self.swarm[1].position[j] - a2 * b2 * abs(self.swarm[1].position[j] - walrus.position[j])
+            X2 = self.gSecondBest.position[j] - a2 * b2 * abs(self.gSecondBest.position[j] - walrus.position[j])
             next_pos = (X1 + X2) / 2
-            print("X1:", X1, "X2:", X2)
+            #print("X1:", X1, "X2:", X2)
             walrus.position[j] = self.normalize(next_pos, j)
             motion_log.append(next_pos)
 
@@ -173,21 +187,21 @@ class WO(Swarm):
         self.females_w = self.swarm[self.n_teen:self.n_teen + self.n_female]
         self.males_w   = self.swarm[self.n_teen + self.n_female:self.n_teen + self.n_female + self.n_male]
 
-        print("swarm:", self.swarm)
-        print("teens:", self.teens_w)
-        print("females:", self.females_w)
-        print("males:", self.males_w)
-        print("n_teen:", len(self.teens_w))
-        print("n_adult:", self.n_adult)
-        print("n_female:", self.n_female)
-        print("n_male:", self.n_male)
+        #print("swarm:", self.swarm)
+        #print("teens:", self.teens_w)
+        #print("females:", self.females_w)
+        #print("males:", self.males_w)
+        #print("n_teen:", len(self.teens_w))
+        #print("n_adult:", self.n_adult)
+        #print("n_female:", self.n_female)
+        #print("n_male:", self.n_male)
 
 # UPDATE ALL
     def updateAgents(self):
         #print("\niter: ", super().currentIter)
         #print("aca")
         if abs(self.danger_signal) >= 1: # Exploration phase.
-            print("aca1")
+            #print("aca1")
             # Update new position of each walrus.
             # Choose vigilantes randomly and set beta.
             self.vigilant1 = self.swarm[rnd.randint(0, self.nAgents-1)]
@@ -195,21 +209,21 @@ class WO(Swarm):
             self.move = self.moveBasedMigration
             for walrus in self.swarm:
                 self.updateOne(walrus)
-                #print("after  => pos: ", agent.position, " best_pos: ", agent.pBest, "\n")
+                ##print("after  => pos: ", agent.position, " best_pos: ", agent.pBest, "\n")
         else: # Exploitation phase.
             if self.safety_signal >= 0.5: # (1) Roosting behavior: The male, female and juvenile walruses are our classification of population members. They have different ways of renewing their position.
-                print("aca2")
+                #print("aca2")
                 # Step 1: Redistribution of male walruses.
                 self.move = self.moveMalesWalrus
                 for male_w in self.males_w:
                     self.updateOne(male_w)
-                print("aca3")
+                #print("aca3")
                 # Step 2: Position update of female walruses.
                 self.move = self.moveFemalesWalrus
                 for i in range(self.n_female):
                     self.current_male = self.males_w[i]
                     self.updateOne(self.females_w[i])
-                print("aca4")
+                #print("aca4")
                 # Step 3: Position update of juvenile walruses.
                 self.move = self.moveTeenWalrus
                 for teen_w in self.teens_w:
@@ -217,13 +231,13 @@ class WO(Swarm):
 
             else: # (2) Foraging behavior: Underwater foraging includes fleeing and gathering behaviors.
                 if abs(self.danger_signal) >= 0.5: # Fleeing behavior.
-                    print("aca5")
+                    #print("aca5")
                     self.move = self.moveFleeing
                     for walrus in self.swarm:
                         self.updateOne(walrus)
 
                 else: # Gathering behavior.
-                    print("aca6")
+                    #print("aca6")
                     self.move = self.moveGathering
                     for walrus in self.swarm:
                         self.updateOne(walrus)
@@ -242,4 +256,9 @@ class WO(Swarm):
         self.danger_signal = self.A_dng_factor * self.R_dng_factor
         self.safety_signal = rnd.random()
         #self.move = self.chooseMovement()
+
+# SEARCH G
+def findGBest(self):
+    self.findGFirst()
+    self.findGSecond()
 

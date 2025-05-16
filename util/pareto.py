@@ -41,6 +41,6 @@ def paretoGraph(path):
 # Add labels and tittle
     plt.xlabel('Max')
     plt.ylabel('Min')
-    plt.title('Frontera de Pareto')
+    plt.title('Pareto Frontier')
 
     plt.show()

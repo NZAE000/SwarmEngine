@@ -62,6 +62,7 @@ class Swarm():
     return self.problem.isFeasible(agent.position)
   
   def isBetterThanGBest(self, agent):
+    print("pbest:", agent.pBest, "gbest:", self.gBest.pBest)
     return self.problem.isFirstBetterSecond(agent.pBest, self.gBest.pBest)
 
   def isBetterThanPBest(self, agent):
@@ -80,28 +81,28 @@ class Swarm():
 
     # Binary domain
     if size_domain == 2:
-      sigmoid = 1 / (1 + math.pow(math.e, -(x))) # Sigmoid [0, 1]
+      sigmoid = 1 / (1 + math.exp(-x)) # Sigmoid [0, 1]
       return self.problem.maxDomain(index) if sigmoid > rnd.random() else self.problem.minDomain(index)
     
     # More than 2 domain values
-    print("index: ", index)
+    print("dim: ", index)
     print("no trans: ", x)
     x_trans         = self.transform(x, index)
     print("trans: ", x_trans)
-    uniform_val     = 1 / size_domain
     constant        = self.normalized_consts[index]
-    sigmoid         = 1 / (1 + math.pow(math.e, -constant*x_trans)) # Sigmoid [0, 1]
-    print("mmm")
-    sum    = uniform_val
-    chosen = 0
+    sigmoid         = 1 / (1 + math.exp(-constant*x_trans)) # Sigmoid [0, 1]
+    #print("mmm")
+    uniform_val = 1 / size_domain
+    acc         = uniform_val
+    chosen      = 0
 
     for discrete in discrete_domain:
-      if (sigmoid <= sum):
+      if (sigmoid <= acc):
         chosen = discrete
         break
-      sum += uniform_val
+      acc += uniform_val
     
-    #print("sigm: ", sigmoid, " sum: ", sum, " chosen: ", chosen, "\n")
+    print("sigm: ", sigmoid, " sum: ", acc, " chosen: ", chosen, "\n")
 
     return chosen
 
@@ -117,8 +118,8 @@ class Swarm():
     minmax      = self.minmax_movs[index]             # [-52.450689271945095, 132.0017963588519], f. exm
     minmax_disp = self.minmax_movs_disp[index]        # [-92.22624281539849, 92.22624281539849], f. exm
     #total_values   = minmax[1] - minmax[0]           # 132.0017963588519 - (-52.450689271945095) = 184.45.. => 100%
-    values_up_to_x = x - minmax[0]                    # 60.0456 - (-52.450689271945095)           = 112.49..  => x%
-    x_trans        = minmax_disp[0] + values_up_to_x  # => -92.22624281539849 + 112.49.. = 20.2638.. = x transformed.
+    value_up_to_x = x - minmax[0]                     # 60.0456 - (-52.450689271945095)           = 112.49..  => x%
+    x_trans       = minmax_disp[0] + value_up_to_x    # => -92.22624281539849 + 112.49.. = 20.2638.. = x transformed.
 
     return x_trans
 ############################################################################
@@ -130,7 +131,7 @@ class Swarm():
    
     for _ in range(n_exec): # Write min and max movement for each varable(position) of problem.
       self.solve()
-      #print("ACA?")
+      ##print("ACA?")
       self.writeMinMaxData(getMinMax(self.path_movLog, self.problem.dimension))
     
     self.minmaxWriter.close()
@@ -210,11 +211,11 @@ class Swarm():
 
 # Update all agents (by default. Others algorithms can be override this method).
   def updateAgents(self):
-    #print("\niter: ", self.currentIter)
+    ##print("\niter: ", self.currentIter)
     for agent in self.swarm:
-      #print("before => pos: ", agent.position, " best_pos: ", agent.pBest)
+      ##print("before => pos: ", agent.position, " best_pos: ", agent.pBest)
       self.updateOne(agent)
-      #print("after  => pos: ", agent.position, " best_pos: ", agent.pBest, "\n")
+      ##print("after  => pos: ", agent.position, " best_pos: ", agent.pBest, "\n")
 
 # Update one agent
   def updateOne(self, agent):
