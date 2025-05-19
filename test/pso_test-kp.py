@@ -6,12 +6,11 @@ from problemOptimization.backpack import Backpack       # Problem to solve
 from algorithmSwarm.pso import PSO                      # Algorithm to use
 
 
-###### MAIN ####################################
-try:
-  swarm = PSO(Backpack(), 100, 5)
-  swarm.prepare(n_exec=300)
-  swarm.solve(n_exec=100)
-  swarm.bestToConsole()
+if __name__ == "__main__":
+	try:
+		swarm = PSO(Backpack(), 50, 10)
+		swarm.solve(n_exec=30)
+		swarm.bestToConsole()
 
-except Exception as e:
-  print(f"{e} \nCaused by {e.__cause__}")
+	except Exception as e:
+		print(f"{e} \nCaused by {e.__cause__}")

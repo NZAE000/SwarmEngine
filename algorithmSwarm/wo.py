@@ -32,44 +32,28 @@ class WO(Swarm):
         self.safety_signal = 0
         self.A_dng_factor  = 0
         self.R_dng_factor  = 0
-        self.alfa = 0 # α decreases from 1 first to 0 with the number of iterations t, and T is the maximum iteration.
-        self.beta = 0
-        self.vigilant1    = Agent(self.problem.dimension)
-        self.vigilant2    = Agent(self.problem.dimension)
-        self.current_male = Agent(self.problem.dimension)
-        self.n_teen    = 0
-        self.n_adult   = 0
-        self.n_male    = 0
-        self.n_female  = 0
-        self.teens_w   = []
-        self.females_w = []
-        self.males_w   = []
-        self.lmda = 3/2
-        self.stdX = math.pow(self.factorial(1+self.lmda) * math.sin(math.pi*self.lmda/2) / (self.factorial((1+self.lmda)/2) * self.lmda * math.pow(2, (self.lmda-1)/1)), 1/self.lmda)
-        self.stdY = 1
+        self.alfa          = 0 # α decreases from 1 first to 0 with the number of iterations t, and T is the maximum iteration.
+        self.beta          = 0
+        self.vigilant1     = Agent(self.problem.dimension)
+        self.vigilant2     = Agent(self.problem.dimension)
+        self.current_male  = Agent(self.problem.dimension)
+        self.n_teen        = 0
+        self.n_adult       = 0
+        self.n_male        = 0
+        self.n_female      = 0
+        self.teens_w       = []
+        self.females_w     = []
+        self.males_w       = []
+        self.lmda          = 3/2
+        self.stdX          = math.pow(self.factorial(1+self.lmda) * math.sin(math.pi*self.lmda/2) / (self.factorial((1+self.lmda)/2) * self.lmda * math.pow(2, (self.lmda-1)/2)), 1/self.lmda)
+        self.stdY          = 1
+        self.move          = self.moveBasedMigration            # Default callable.
+        self.gSecondBest   = Agent(self.problem.dimension)      # Second g best.
 
-        self.move = self.moveBasedMigration # Default callable.
-        self.gSecondBest = Agent(self.problem.dimension)      # Second g best
-
-    #def chooseMovement(self):
-    #    
-    #    if self.danger_signal >= 1: # Exploration phase.
-    #        # Update new position of each walrus.
-    #        print()
-    #    else: # Exploitation phase.
-    #        #if ()
 
     # HELPER METHODS ###########################################################
     def isBetterThanGSecond(self, agent):
         return self.problem.isFirstBetterSecond(agent.pBest, self.gSecondBest.position)
-
-    def findGFirst(self):
-        super().findGBest()
-
-    def findGSecond(self):
-        for i in range(self.nAgents):
-            if self.isBetterThanGSecond(self.swarm[i]) and not self.isBetterThanGBest(self.swarm[i]):
-                self.gSecondBest.copy(self.swarm[i])
     ############################################################################
 
     ## Exploration: When risk factors are too high, walrus herds will migrate to areas more suitable for population survival.
@@ -133,10 +117,11 @@ class WO(Swarm):
         """
         return gamma(x + 1)
     
+    # L´evy distribution representing L´evy movement.
     def levyFlight(self):
         #sigma = self.stdX
         #u     = 
-        return 0.05 * (self.normal_distr(0, self.stdX) / math.pow(abs(self.normal_distr(0, self.stdY)), 1/self.lmda))
+        return 0.05 * (self.normal_distr(1, self.stdX) / math.pow(abs(self.normal_distr(1, self.stdY)), 1/self.lmda))
 
     # Juvenile walruses at the edge of the population are often targeted by killer whales and polar bears. Therefore, juvenile walruses need to update their current position to avoid predation.
     def moveTeenWalrus(self, teen_w, motion_log):
@@ -145,6 +130,8 @@ class WO(Swarm):
             safety_pos    = self.gBest.position[j] + teen_w.position[j] * levy
             distress_coef = rnd.random() # Distress coefficient of juvenile walrus.
             next_pos      = (safety_pos - teen_w.position[j]) * distress_coef
+            print("levy: ", levy)
+            print("next_pos: ", next_pos)
             teen_w.position[j] = self.normalize(next_pos, j)
             motion_log.append(next_pos)
 
@@ -159,20 +146,44 @@ class WO(Swarm):
     def moveGathering(self, walrus, motion_log):
         for j in range(self.problem.dimension):
             a1 = self.beta * rnd.random() - self.beta
-            a2 = self.beta * rnd.random() - self.beta
-            b1 = math.tan(rnd.uniform(0, math.pi))
-            b2 = math.tan(rnd.uniform(0, math.pi))
+            b1 = np.tan(rnd.random() * math.pi)
+            b1 = np.clip(b1, -10, 10)
             X1 = self.gBest.position[j] - a1 * b1 * abs(self.gBest.position[j] - walrus.position[j])
+
+            a2 = self.beta * rnd.random() - self.beta
+            b2 = np.tan(rnd.random() * math.pi)
+            b2 = np.clip(b2, -10, 10)
             X2 = self.gSecondBest.position[j] - a2 * b2 * abs(self.gSecondBest.position[j] - walrus.position[j])
-            next_pos = (X1 + X2) / 2
             #print("X1:", X1, "X2:", X2)
+            next_pos = (X1 + X2) / 2
             walrus.position[j] = self.normalize(next_pos, j)
             motion_log.append(next_pos)
 
-# IMPLEMENTS! #########################################################
-
-# INIT ALL
-    def initAllAgents(self):
+    def initParams(self):
+        # Variable params for each iteration.
+        self.danger_signal = 0
+        self.safety_signal = 0
+        self.A_dng_factor  = 0
+        self.R_dng_factor  = 0
+        self.alfa          = 0 # α decreases from 1 first to 0 with the number of iterations t, and T is the maximum iteration.
+        self.beta          = 0
+        self.vigilant1     = Agent(self.problem.dimension)
+        self.vigilant2     = Agent(self.problem.dimension)
+        self.current_male  = Agent(self.problem.dimension)
+        self.n_teen        = 0
+        self.n_adult       = 0
+        self.n_male        = 0
+        self.n_female      = 0
+        self.teens_w       = []
+        self.females_w     = []
+        self.males_w       = []
+        self.lmda          = 3/2
+        self.stdX          = math.pow(self.factorial(1+self.lmda) * math.sin(math.pi*self.lmda/2) / (self.factorial((1+self.lmda)/2) * self.lmda * math.pow(2, (self.lmda-1)/2)), 1/self.lmda)
+        self.stdY          = 1
+        self.move          = self.moveBasedMigration            # Default callable.
+        self.gSecondBest   = Agent(self.problem.dimension)      # Second g best.
+    
+    def initWorses(self):
         # Clear all walruses.
         self.teens_w.clear()
         self.females_w.clear()
@@ -196,12 +207,25 @@ class WO(Swarm):
         #print("n_female:", self.n_female)
         #print("n_male:", self.n_male)
 
+
+# IMPLEMENTS! #########################################################
+
+# INIT
+    def initialize(self):
+        self.initParams()   # First init params
+        self.initWorses()   # Then all worses.
+
+# INIT GBest succesor.
+    def initOtherGBest(self):
+        self.gSecondBest.copy(self.swarm[0])  # Copy first feasible agent.
+        for i in range(1, self.nAgents):
+            self.checkUpdateOtherGBest(self.swarm[i])
+
 # UPDATE ALL
     def updateAgents(self):
         #print("\niter: ", super().currentIter)
-        #print("aca")
         if abs(self.danger_signal) >= 1: # Exploration phase.
-            #print("aca1")
+            print("Exploration")
             # Update new position of each walrus.
             # Choose vigilantes randomly and set beta.
             self.vigilant1 = self.swarm[rnd.randint(0, self.nAgents-1)]
@@ -209,21 +233,22 @@ class WO(Swarm):
             self.move = self.moveBasedMigration
             for walrus in self.swarm:
                 self.updateOne(walrus)
-                ##print("after  => pos: ", agent.position, " best_pos: ", agent.pBest, "\n")
+                #print("after  => pos: ", agent.position, " best_pos: ", agent.pBest, "\n")
         else: # Exploitation phase.
+            print("Exploitation")
             if self.safety_signal >= 0.5: # (1) Roosting behavior: The male, female and juvenile walruses are our classification of population members. They have different ways of renewing their position.
-                #print("aca2")
+                print("Male")
                 # Step 1: Redistribution of male walruses.
                 self.move = self.moveMalesWalrus
                 for male_w in self.males_w:
                     self.updateOne(male_w)
-                #print("aca3")
+                print("Female")
                 # Step 2: Position update of female walruses.
                 self.move = self.moveFemalesWalrus
                 for i in range(self.n_female):
                     self.current_male = self.males_w[i]
                     self.updateOne(self.females_w[i])
-                #print("aca4")
+                print("Teen")
                 # Step 3: Position update of juvenile walruses.
                 self.move = self.moveTeenWalrus
                 for teen_w in self.teens_w:
@@ -231,17 +256,16 @@ class WO(Swarm):
 
             else: # (2) Foraging behavior: Underwater foraging includes fleeing and gathering behaviors.
                 if abs(self.danger_signal) >= 0.5: # Fleeing behavior.
-                    #print("aca5")
+                    print("Foraging")
                     self.move = self.moveFleeing
                     for walrus in self.swarm:
                         self.updateOne(walrus)
 
                 else: # Gathering behavior.
-                    #print("aca6")
+                    print("Gathering")
                     self.move = self.moveGathering
                     for walrus in self.swarm:
                         self.updateOne(walrus)
-
 
 # MOVE ONE
     def moveAgent(self, agent, motion_log):
@@ -250,15 +274,14 @@ class WO(Swarm):
 # UPDATE PARAMETERS
     def updateParams(self):
         self.alfa          = 1 - (self.currentIter / self.maxIter)
-        self.beta          = 1 - 1 / ( 1 + math.exp( -(self.currentIter - (self.maxIter/2)) / self.maxIter) * 10 )
+        self.beta          = 1 - 1 / ( 1 + math.exp( ((self.maxIter/2) - self.currentIter) / self.maxIter) * 10 )
         self.A_dng_factor  = 2 * self.alfa
         self.R_dng_factor  = 2 * rnd.random() - 1
         self.danger_signal = self.A_dng_factor * self.R_dng_factor
         self.safety_signal = rnd.random()
-        #self.move = self.chooseMovement()
 
-# SEARCH G
-def findGBest(self):
-    self.findGFirst()
-    self.findGSecond()
+# UPDATE GBest succesor, if is possible.
+    def checkUpdateOtherGBest(self, agent):
+        if self.isBetterThanGSecond(agent) and not self.isBetterThanGBest(agent):
+            self.gSecondBest.copy(agent)
 
