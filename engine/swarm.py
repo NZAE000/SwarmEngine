@@ -54,7 +54,7 @@ class Swarm():
 		# File loggers #########################################################
 		self.gbestLogger = open(self.path_gbestLog, "w")
 		self.agentLogger = open(self.path_agentLog, "w")
-		self.movLogger   = open(self.path_movLog,   "w")
+		#self.movLogger   = open(self.path_movLog,   "w")
 
 		# File data-writers
 		self.gBestWriter    = open(self.path_gbestData,    "w")
@@ -189,13 +189,13 @@ class Swarm():
 		self.closeLoggers()
 		self.gbestLogger = open(self.path_gbestLog, "w")
 		self.agentLogger = open(self.path_agentLog, "w")
-		self.movLogger   = open(self.path_movLog,   "w")
+		#self.movLogger   = open(self.path_movLog,   "w")
 
 	# CLOSE LOGGERS
 	def closeLoggers(self):
 		self.gbestLogger.close()
 		self.agentLogger.close()
-		self.movLogger.close()
+		#self.movLogger.close()
 
 	# INIITALIZE AGENTS
 	def initAgents(self):
@@ -222,11 +222,11 @@ class Swarm():
 	# Run optimization
 	def evolve(self):
 		while self.currentIter <= self.maxIter:
-			self.updateParams()             # Update params
-			self.updateAgents()             # Update all agents
-			self.agentsToFile()             # Log all agents
-			self.bestToFile()               # Log global best
-			self.currentIter += 1           # Advance
+			self.logIteration()				# Log current iteration.
+			self.updateParams()             # Update params.
+			self.updateAgents()             # Update all agents.
+			self.logGBest()               	# Log global best.
+			self.currentIter += 1           # Advance.
 
 	# Update all agents (by default. Others algorithms can be override this method).
 	def updateAgents(self):
@@ -245,7 +245,7 @@ class Swarm():
 		while True:
 			backupAgent.copy(agent)
 			self.moveAgent(backupAgent, motion_log)
-			self.logMotion(motion_log)      # Log movement.
+			#self.logMotion(motion_log)      # Log movement.
 			motion_log.clear()
 
 			if self.isFeasible(backupAgent):
@@ -272,32 +272,37 @@ class Swarm():
 		# Update other Gbest (in specific algorithm).
 		self.checkUpdateOtherGBest(agent)
 
+		self.logAgent(agent)
 
 	# Agent log.
 	def agentLog(self, agent):
 		return self.problem.evalLog(agent.pBest)
 
 	# Log global best to file.
-	def bestToFile(self):
+	def logGBest(self):
 		self.gbestLogger.write(f"{self.agentLog(self.gBest)}\n")
 
 	# Log global best to console.
 	def bestToConsole(self):
 		print(f"{self.agentLog(self.gBest)}")
 
-	# Log all agent to file.
-	def agentsToFile(self):
+	# Log iteration
+	def logIteration(self):
 		self.agentLogger.write(f"Iter {self.currentIter}\n")
-		for agent in self.swarm:
-			self.agentTofile(agent)
+
+	# Log all agent to file.
+	#def logAgents(self):
+	#	#self.agentLogger.write(f"Iter {self.currentIter}\n")
+	#	for agent in self.swarm:
+	#		self.logAgent(agent)
 
 	# Log agent to file.
-	def agentTofile(self, agent):
+	def logAgent(self, agent):
 		self.agentLogger.write(f"\tpos: {agent.position} - best_pos: {self.agentLog(agent)}\n")
 
 	# Log motion to file.
-	def logMotion(self, motion):
-		self.movLogger.write(f"{motion}\n")
+	#def logMotion(self, motion):
+	#	self.movLogger.write(f"{motion}\n")
 
 	# Global best writer.
 	def writeGBest(self):

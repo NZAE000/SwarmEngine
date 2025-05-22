@@ -105,7 +105,7 @@ class WO(Swarm):
             motion_log.append(next_pos)
 
     def normal_distr(self, mean, std):
-        return float(np.random.normal(mean, std, 1)[0])
+        return np.random.normal(loc=mean, scale=std) #float(np.random.normal(mean, std, 1)[0])
     
     def factorial(self, x):
         """
@@ -119,19 +119,25 @@ class WO(Swarm):
     
     # L´evy distribution representing L´evy movement.
     def levyFlight(self):
-        #sigma = self.stdX
-        #u     = 
-        return 0.05 * (self.normal_distr(1, self.stdX) / math.pow(abs(self.normal_distr(1, self.stdY)), 1/self.lmda))
+        #print("stdX:", self.stdX)
+        #print("stdY:", self.stdY)
+        distrX = self.normal_distr(0, self.stdX)
+        distrY = self.normal_distr(0, self.stdY)
+        distrY = max(abs(distrY), 1e-3) # Avoid making the denominator too small, which could cause the result of the Levy division to be an extremely large number.
+        #print("distrX:", distrX)
+        #print("distrY:", distrY)
+        return 0.05 * (distrX / math.pow(abs(distrY), 1/self.lmda))
 
     # Juvenile walruses at the edge of the population are often targeted by killer whales and polar bears. Therefore, juvenile walruses need to update their current position to avoid predation.
     def moveTeenWalrus(self, teen_w, motion_log):
         for j in range(self.problem.dimension):
             levy          = self.levyFlight()
+            #print("levy:", levy)
             safety_pos    = self.gBest.position[j] + teen_w.position[j] * levy
+            #print("safety_pos:", safety_pos)
             distress_coef = rnd.random() # Distress coefficient of juvenile walrus.
             next_pos      = (safety_pos - teen_w.position[j]) * distress_coef
-            print("levy: ", levy)
-            print("next_pos: ", next_pos)
+            #print("next_pos: ", next_pos)
             teen_w.position[j] = self.normalize(next_pos, j)
             motion_log.append(next_pos)
 
@@ -202,10 +208,10 @@ class WO(Swarm):
         #print("teens:", self.teens_w)
         #print("females:", self.females_w)
         #print("males:", self.males_w)
-        #print("n_teen:", len(self.teens_w))
-        #print("n_adult:", self.n_adult)
-        #print("n_female:", self.n_female)
-        #print("n_male:", self.n_male)
+        print("n_teen:", len(self.teens_w))
+        print("n_adult:", self.n_adult)
+        print("n_female:", self.n_female)
+        print("n_male:", self.n_male)
 
 
 # IMPLEMENTS! #########################################################
@@ -225,7 +231,7 @@ class WO(Swarm):
     def updateAgents(self):
         #print("\niter: ", super().currentIter)
         if abs(self.danger_signal) >= 1: # Exploration phase.
-            print("Exploration")
+            #print("Exploration")
             # Update new position of each walrus.
             # Choose vigilantes randomly and set beta.
             self.vigilant1 = self.swarm[rnd.randint(0, self.nAgents-1)]
@@ -235,20 +241,20 @@ class WO(Swarm):
                 self.updateOne(walrus)
                 #print("after  => pos: ", agent.position, " best_pos: ", agent.pBest, "\n")
         else: # Exploitation phase.
-            print("Exploitation")
+            #print("Exploitation")
             if self.safety_signal >= 0.5: # (1) Roosting behavior: The male, female and juvenile walruses are our classification of population members. They have different ways of renewing their position.
-                print("Male")
+                #print("Male")
                 # Step 1: Redistribution of male walruses.
                 self.move = self.moveMalesWalrus
                 for male_w in self.males_w:
                     self.updateOne(male_w)
-                print("Female")
+                #print("Female")
                 # Step 2: Position update of female walruses.
                 self.move = self.moveFemalesWalrus
                 for i in range(self.n_female):
                     self.current_male = self.males_w[i]
                     self.updateOne(self.females_w[i])
-                print("Teen")
+                #print("Teen")
                 # Step 3: Position update of juvenile walruses.
                 self.move = self.moveTeenWalrus
                 for teen_w in self.teens_w:
@@ -256,13 +262,13 @@ class WO(Swarm):
 
             else: # (2) Foraging behavior: Underwater foraging includes fleeing and gathering behaviors.
                 if abs(self.danger_signal) >= 0.5: # Fleeing behavior.
-                    print("Foraging")
+                    #print("Foraging")
                     self.move = self.moveFleeing
                     for walrus in self.swarm:
                         self.updateOne(walrus)
 
                 else: # Gathering behavior.
-                    print("Gathering")
+                    #print("Gathering")
                     self.move = self.moveGathering
                     for walrus in self.swarm:
                         self.updateOne(walrus)

@@ -17,8 +17,8 @@ from engine.problem import Problem
 class Pickup(Problem):
 	def __init__(self):
 
-		'''# Small #################################################################
-		super().__init__("pickup", 6) # Name problem and dimension params.
+		# Small #################################################################
+		'''super().__init__("pickup", 6) # Name problem and dimension params.
 
 		self.n_clients = self.dimension
 		self.n_hubs    = 3
