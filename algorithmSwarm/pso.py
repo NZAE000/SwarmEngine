@@ -20,9 +20,8 @@ class PSO(Swarm):
 
 	# IMPLEMENTS! #########################################################
 	# MOVE
-	def moveAgent(self, agent, motion_log):
+	def moveAgent(self, agent):
 		for j in range(self.problem.dimension):
 			agent.velocity[j] = self.theta * agent.velocity[j] + self.alpha * rnd.random() * (self.gBest.position[j] - agent.position[j]) + self.beta * rnd.random() * (agent.pBest[j] - agent.position[j])
 			#next_pos          = agent.position[j] + self.theta * agent.velocity[j] + self.alpha * rnd.random() * (self.gBest.position[j] - agent.position[j]) + self.beta * rnd.random() * (agent.pBest[j] - agent.position[j])
 			agent.position[j] = self.normalize(agent.velocity[j], j) # Update position (normalized to the problem domain)
-			motion_log.append(agent.velocity[j])

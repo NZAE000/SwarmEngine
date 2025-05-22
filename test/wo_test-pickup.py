@@ -12,7 +12,7 @@ from util.paretoplot import paretoGraph                            # Show data r
 if __name__ == "__main__":
 	try:
 		swarm = WO(Pickup(), 100, 22) # 500, 46
-		swarm.solve(n_exec=1)
+		swarm.solve(n_exec=10, measure_time=True)
 		swarm.bestToConsole()
 
 		gBestGraph(swarm.path_gbestLog)

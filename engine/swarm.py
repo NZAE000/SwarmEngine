@@ -2,6 +2,7 @@ from engine.agent import Agent
 from pathlib import Path
 import sys
 import os
+import timeit
 
 sys.path.append(str(Path(__file__).parent.parent))
 #from util.minmaxMov import getMinMax
@@ -13,7 +14,7 @@ sys.path.append(str(Path(__file__).parent.parent))
 class Swarm():
 	def __init__(self, algorithm_name, problem, iterations, nAgents):
 		
-		# Algorithm + problem
+		# Algorithm + problem.
 		self.id = algorithm_name + "-" + problem.name
 
 		# Params base.
@@ -29,6 +30,13 @@ class Swarm():
 		self.gBest = Agent(self.problem.dimension)    # Global Best.
 
 		self.times_wrong = 0                          # No feasible counter.
+		self.measure_time = False					  # Whether execution time should be measured
+
+		# Members to method
+		self.logIteration  = self.logIter
+		self.logAgent      = self.logAgnt
+		self.logGlobalBest = self.logGBest
+
 		#self.normalize   = self.sigmoidNormalize      # Default normalization.
 
 		# Constants needed for the problem !!
@@ -44,10 +52,11 @@ class Swarm():
 			os.makedirs(str(Path(__file__).parent.parent) + "/data/" + self.id)
 
 		# File paths
-		self.path_gbestLog     = str(Path(__file__).parent.parent) + "/swarm_logs/" + self.id + "/gbest_log" + self.id + ".txt"
-		self.path_agentLog     = str(Path(__file__).parent.parent) + "/swarm_logs/" + self.id + "/agent_log" + self.id + ".txt"
-		self.path_movLog       = str(Path(__file__).parent.parent) + "/swarm_logs/" + self.id + "/mov_log"   + self.id + ".txt"
-		self.path_gbestData    = str(Path(__file__).parent.parent) + "/data/"       + self.id + "/all_gbest" + self.id + ".txt"
+		self.path_gbestLog     = str(Path(__file__).parent.parent) + "/swarm_logs/" + self.id + "/gbest_log"    + self.id + ".txt"
+		self.path_agentLog     = str(Path(__file__).parent.parent) + "/swarm_logs/" + self.id + "/agent_log"    + self.id + ".txt"
+		#self.path_movLog       = str(Path(__file__).parent.parent) + "/swarm_logs/" + self.id + "/mov_log"      + self.id + ".txt"
+		self.path_gbestData    = str(Path(__file__).parent.parent) + "/data/"       + self.id + "/all_gbest"    + self.id + ".txt"
+		self.path_execTime     = str(Path(__file__).parent.parent) + "/data/"       + self.id + "/all_execTime" + self.id + ".txt"
 		#self.path_minmaxData   = str(Path(__file__).parent.parent) + "/data/minmax_mov"      + self.id + ".txt"
 		#self.path_constantData = str(Path(__file__).parent.parent) + "/data/constant_sigm"   + self.id + ".txt"
 
@@ -58,6 +67,7 @@ class Swarm():
 
 		# File data-writers
 		self.gBestWriter    = open(self.path_gbestData,    "w")
+		self.execTimeWriter = open(self.path_execTime,     "w")
 		#self.minmaxWriter   = open(self.path_minmaxData,   "w")
 		#self.constantWriter = open(self.path_constantData, "w")
 		########################################################################
@@ -163,16 +173,25 @@ class Swarm():
 	#  self.closeWriters()
 
 	# RUNNER
-	def solve(self, n_exec=1):
-		self.gBestWriter = open(self.path_gbestData, "w")
+	def solve(self, n_exec=1, measure_time=False):
+		self.measure_time   = measure_time
+		self.gBestWriter    = open(self.path_gbestData, "w")
+		self.execTimeWriter = open(self.path_execTime,  "w")
+		timer               = timeit.Timer(lambda: self.evolve())
+		duration 			= 0
 
-		for _ in range(n_exec): # Executions
+		for _ in range(n_exec): # Executions.
 			self.init()
-			self.evolve()
+			if self.measure_time:
+				duration = timer.timeit(number=1) # Measure self.evolve().
+			else: 
+				self.evolve()
 			self.writeGBest()
+			self.writeExecTime(duration)
 
 		self.closeLoggers()
 		self.gBestWriter.close()
+		self.execTimeWriter.close()
 
 	# INITIALIZE SWARM #########################################################
 	def init(self):
@@ -189,7 +208,12 @@ class Swarm():
 		self.closeLoggers()
 		self.gbestLogger = open(self.path_gbestLog, "w")
 		self.agentLogger = open(self.path_agentLog, "w")
-		#self.movLogger   = open(self.path_movLog,   "w")
+		#self.movLogger  = open(self.path_movLog,   "w")
+
+		if (self.measure_time):
+			self.logIteration  = lambda:       None  # Do nothing
+			self.logAgent      = lambda agent: None  # Do nothing
+			self.logGlobalBest = lambda:       None  # Do nothing
 
 	# CLOSE LOGGERS
 	def closeLoggers(self):
@@ -225,7 +249,7 @@ class Swarm():
 			self.logIteration()				# Log current iteration.
 			self.updateParams()             # Update params.
 			self.updateAgents()             # Update all agents.
-			self.logGBest()               	# Log global best.
+			self.logGlobalBest()            # Log global best.
 			self.currentIter += 1           # Advance.
 
 	# Update all agents (by default. Others algorithms can be override this method).
@@ -239,14 +263,14 @@ class Swarm():
 	# Update one agent.
 	def updateOne(self, agent):
 		backupAgent = Agent(self.problem.dimension)
-		motion_log = []
+		#motion_log = []
 
 		# Move until feasible.
 		while True:
 			backupAgent.copy(agent)
-			self.moveAgent(backupAgent, motion_log)
+			self.moveAgent(backupAgent)#, motion_log)
 			#self.logMotion(motion_log)      # Log movement.
-			motion_log.clear()
+			#motion_log.clear()
 
 			if self.isFeasible(backupAgent):
 			#print("feasible")
@@ -271,43 +295,43 @@ class Swarm():
 
 		# Update other Gbest (in specific algorithm).
 		self.checkUpdateOtherGBest(agent)
-
 		self.logAgent(agent)
+
 
 	# Agent log.
 	def agentLog(self, agent):
 		return self.problem.evalLog(agent.pBest)
+	
+	# Log global best to console.
+	def bestToConsole(self):
+		print(f"{self.agentLog(self.gBest)}")
+
+# Loggers
+	# Log iteration to file.
+	def logIter(self):
+		self.agentLogger.write(f"Iter {self.currentIter}\n")
+
+	# Log agent to file.
+	def logAgnt(self, agent):
+		self.agentLogger.write(f"\tpos: {agent.position} - best_pos: {self.agentLog(agent)}\n")
 
 	# Log global best to file.
 	def logGBest(self):
 		self.gbestLogger.write(f"{self.agentLog(self.gBest)}\n")
 
-	# Log global best to console.
-	def bestToConsole(self):
-		print(f"{self.agentLog(self.gBest)}")
-
-	# Log iteration
-	def logIteration(self):
-		self.agentLogger.write(f"Iter {self.currentIter}\n")
-
-	# Log all agent to file.
-	#def logAgents(self):
-	#	#self.agentLogger.write(f"Iter {self.currentIter}\n")
-	#	for agent in self.swarm:
-	#		self.logAgent(agent)
-
-	# Log agent to file.
-	def logAgent(self, agent):
-		self.agentLogger.write(f"\tpos: {agent.position} - best_pos: {self.agentLog(agent)}\n")
-
 	# Log motion to file.
 	#def logMotion(self, motion):
 	#	self.movLogger.write(f"{motion}\n")
 
+# Writers
 	# Global best writer.
 	def writeGBest(self):
 		avgWrongPerAgent = self.times_wrong / (self.maxIter * self.nAgents)
 		self.gBestWriter.write(f"{f"{self.agentLog(self.gBest)}-{avgWrongPerAgent}\n"}")
+
+	# Execution time writer.
+	def writeExecTime(self, duration):
+		self.execTimeWriter.write(f"{duration:.6f}\n")
 
 	## Min Max data writer
 	#  def writeMinMaxData(self, minmax):
@@ -330,7 +354,7 @@ class Swarm():
 	#    self.minmaxWriter.close()
 	#    self.constantWriter.close()
 
-	## INTERFACE #################################################
+## INTERFACE #################################################
 
 	# INIT REQUERIED MEMBERS IN SPECIFI ALGORITHM.
 	def initialize(self):
@@ -345,7 +369,7 @@ class Swarm():
 		pass
 
 	# MOVE: the implementer should append the pos+perturbance for each dimension to 'motion_log'.
-	def moveAgent(self, motion_log):
+	def moveAgent(self, agent):#, motion_log):
 		pass
 
 	# UPDATE OTHERS GBest.

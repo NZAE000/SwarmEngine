@@ -57,13 +57,12 @@ class WO(Swarm):
     ############################################################################
 
     ## Exploration: When risk factors are too high, walrus herds will migrate to areas more suitable for population survival.
-    def moveBasedMigration(self, walrus, motion_log):
+    def moveBasedMigration(self, walrus):
         r3 = rnd.random()
         for j in range(self.problem.dimension):
             migration_step = (self.vigilant1.position[j] - self.vigilant2.position[j]) * self.beta * math.pow(r3, 2)
             next_pos = walrus.position[j] + migration_step
             walrus.position[j] = self.normalize(next_pos, j)
-            motion_log.append(next_pos)
 
     # In the quasi-Monte Carlo method, the Halton sequence is a widely used method to generate randomly distributed sequences.
     def halton_index(self, index, base):
@@ -87,7 +86,7 @@ class WO(Swarm):
         return primes
 
     # Adopting Halton sequence distribution for male walrus position update can allow a broader distribution of the population with search space
-    def moveMalesWalrus(self, male_w, motion_log):
+    def moveMalesWalrus(self, male_w):
         bases = self.generate_first_n_primes(self.problem.dimension)
         for j in range(self.problem.dimension):
             lower_bound = self.problem.minDomain(j)
@@ -95,14 +94,12 @@ class WO(Swarm):
             halton      = self.halton_index(j+1, bases[j])
             next_pos    = lower_bound + halton * (upper_bound - lower_bound)
             male_w.position[j] = self.normalize(next_pos, j)
-            motion_log.append(next_pos)
     
     # The female walrus is influenced by male walrus (Malet i,j) and the lead walrus (Xtbest). As the process of iteration, the female walrus is gradually influenced less by the mate and more by the leader.
-    def moveFemalesWalrus(self, female_w, motion_log):
+    def moveFemalesWalrus(self, female_w):
         for j in range(self.problem.dimension):
             next_pos = female_w.position[j] + self.alfa * (self.current_male.position[j] - female_w.position[j]) + (1 - self.alfa) * (self.gBest.position[j] - female_w.position[j])
             female_w.position[j] = self.normalize(next_pos, j)
-            motion_log.append(next_pos)
 
     def normal_distr(self, mean, std):
         return np.random.normal(loc=mean, scale=std) #float(np.random.normal(mean, std, 1)[0])
@@ -129,7 +126,7 @@ class WO(Swarm):
         return 0.05 * (distrX / math.pow(abs(distrY), 1/self.lmda))
 
     # Juvenile walruses at the edge of the population are often targeted by killer whales and polar bears. Therefore, juvenile walruses need to update their current position to avoid predation.
-    def moveTeenWalrus(self, teen_w, motion_log):
+    def moveTeenWalrus(self, teen_w):
         for j in range(self.problem.dimension):
             levy          = self.levyFlight()
             #print("levy:", levy)
@@ -139,17 +136,15 @@ class WO(Swarm):
             next_pos      = (safety_pos - teen_w.position[j]) * distress_coef
             #print("next_pos: ", next_pos)
             teen_w.position[j] = self.normalize(next_pos, j)
-            motion_log.append(next_pos)
 
     # Walruses are also attacked by natural predators during underwater foraging, and they will flee from their current activity area based on danger signals from their peers.
-    def moveFleeing(self, walrus, motion_log):
+    def moveFleeing(self, walrus):
         for j in range(self.problem.dimension):
             next_pos = walrus.position[j] * self.R_dng_factor - abs(self.gBest.position[j] - walrus.position[j]) * math.pow(rnd.random(), 2) # self.gBest.position[j] - walrus.position[j] denotes the distance between the current walrus and the best walrus.
             walrus.position[j] = self.normalize(next_pos, j)
-            motion_log.append(next_pos)
 
     # Walruses can cooperate to forage and move according to the location of other walruses in the population and sharing location information can help the whole walrus herd to find the sea area with higher food abundance.
-    def moveGathering(self, walrus, motion_log):
+    def moveGathering(self, walrus):
         for j in range(self.problem.dimension):
             a1 = self.beta * rnd.random() - self.beta
             b1 = np.tan(rnd.random() * math.pi)
@@ -163,7 +158,6 @@ class WO(Swarm):
             #print("X1:", X1, "X2:", X2)
             next_pos = (X1 + X2) / 2
             walrus.position[j] = self.normalize(next_pos, j)
-            motion_log.append(next_pos)
 
     def initParams(self):
         # Variable params for each iteration.
@@ -208,10 +202,10 @@ class WO(Swarm):
         #print("teens:", self.teens_w)
         #print("females:", self.females_w)
         #print("males:", self.males_w)
-        print("n_teen:", len(self.teens_w))
-        print("n_adult:", self.n_adult)
-        print("n_female:", self.n_female)
-        print("n_male:", self.n_male)
+        #print("n_teen:", len(self.teens_w))
+        #print("n_adult:", self.n_adult)
+        #print("n_female:", self.n_female)
+        #print("n_male:", self.n_male)
 
 
 # IMPLEMENTS! #########################################################
@@ -274,8 +268,8 @@ class WO(Swarm):
                         self.updateOne(walrus)
 
 # MOVE ONE
-    def moveAgent(self, agent, motion_log):
-        self.move(agent, motion_log)
+    def moveAgent(self, agent):
+        self.move(agent)
 
 # UPDATE PARAMETERS
     def updateParams(self):

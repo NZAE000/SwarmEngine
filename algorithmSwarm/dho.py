@@ -50,7 +50,7 @@ class DHO(Swarm):
 		else:
 			return self.moveBasedAngle
 
-	def moveBasedLeader(self, agent, motion_log):
+	def moveBasedLeader(self, agent):
 		for j in range(self.problem.dimension):
 			# Change params
 			self.beta = rnd.randint(-1, 1)
@@ -58,10 +58,8 @@ class DHO(Swarm):
 
 			next_pos  = self.gBest.position[j] - self.Y * self.windSpeed * abs(self.L * self.gBest.position[j] * agent.position[j])
 			agent.position[j] = self.normalize(next_pos, j)
-			
-			motion_log.append(next_pos)
 
-	def moveBasedSuccesor(self, agent, motion_log):
+	def moveBasedSuccesor(self, agent):
 		for j in range(self.problem.dimension):
 			# Change params
 			self.beta = rnd.randint(-1, 1)
@@ -69,10 +67,8 @@ class DHO(Swarm):
 
 			next_pos  = self.gSuccesor.position[j] - self.Y * self.windSpeed * abs(self.L * self.gBest.position[j] * agent.position[j])
 			agent.position[j] = self.normalize(next_pos, j)
-			
-			motion_log.append(next_pos)
 
-	def moveBasedAngle(self, agent, motion_log):
+	def moveBasedAngle(self, agent):
 		for j in range(self.problem.dimension):
 			# Change params
 			self.lambd         = rnd.randint(0, 1)
@@ -88,8 +84,6 @@ class DHO(Swarm):
 
 			next_pos  = self.gBest.position[j] + self.Y * self.windSpeed * abs(math.cos(self.deerAnglePos) * self.gBest.position[j] - agent.position[j])
 			agent.position[j] = self.normalize(next_pos, j)
-			
-			motion_log.append(next_pos)
 
 	# IMPLEMENTS! #########################################################
 
@@ -122,8 +116,8 @@ class DHO(Swarm):
 			self.checkUpdateOtherGBest(self.swarm[i])
 
 	# MOVE
-	def moveAgent(self, agent, motion_log):
-		self.move(agent, motion_log)
+	def moveAgent(self, agent):
+		self.move(agent)
 
 	# UPDATE PARAMETERS
 	def updateParams(self):

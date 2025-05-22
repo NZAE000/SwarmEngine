@@ -11,8 +11,8 @@ from util.paretoplot import paretoGraph                            # Show data r
 
 if __name__ == "__main__":
     try:
-        swarm = PSO(Pickup(), 500, 46)
-        swarm.solve(n_exec=1)
+        swarm = PSO(Pickup(), 100, 22)
+        swarm.solve(n_exec=10, measure_time=True)
         swarm.bestToConsole()
 
         gBestGraph(swarm.path_gbestLog)
