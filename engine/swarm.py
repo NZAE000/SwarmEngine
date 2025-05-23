@@ -56,20 +56,20 @@ class Swarm():
 		self.path_agentLog     = str(Path(__file__).parent.parent) + "/swarm_logs/" + self.id + "/agent_log"    + self.id + ".txt"
 		#self.path_movLog       = str(Path(__file__).parent.parent) + "/swarm_logs/" + self.id + "/mov_log"      + self.id + ".txt"
 		self.path_gbestData    = str(Path(__file__).parent.parent) + "/data/"       + self.id + "/all_gbest"    + self.id + ".txt"
-		self.path_execTime     = str(Path(__file__).parent.parent) + "/data/"       + self.id + "/all_execTime" + self.id + ".txt"
+		self.path_execTimeData = str(Path(__file__).parent.parent) + "/data/"       + self.id + "/all_execTime" + self.id + ".txt"
 		#self.path_minmaxData   = str(Path(__file__).parent.parent) + "/data/minmax_mov"      + self.id + ".txt"
 		#self.path_constantData = str(Path(__file__).parent.parent) + "/data/constant_sigm"   + self.id + ".txt"
 
 		# File loggers #########################################################
-		self.gbestLogger = open(self.path_gbestLog, "w")
-		self.agentLogger = open(self.path_agentLog, "w")
-		#self.movLogger   = open(self.path_movLog,   "w")
+		self.gbestLogger = None
+		self.agentLogger = None
+		#self.movLogger   = None
 
 		# File data-writers
-		self.gBestWriter    = open(self.path_gbestData,    "w")
-		self.execTimeWriter = open(self.path_execTime,     "w")
-		#self.minmaxWriter   = open(self.path_minmaxData,   "w")
-		#self.constantWriter = open(self.path_constantData, "w")
+		self.gBestWriter    = None
+		self.execTimeWriter = None
+		#self.minmaxWriter   = None
+		#self.constantWriter = None
 		########################################################################
 
 
@@ -176,22 +176,31 @@ class Swarm():
 	def solve(self, n_exec=1, measure_time=False):
 		self.measure_time   = measure_time
 		self.gBestWriter    = open(self.path_gbestData, "w")
-		self.execTimeWriter = open(self.path_execTime,  "w")
-		timer               = timeit.Timer(lambda: self.evolve())
-		duration 			= 0
 
-		for _ in range(n_exec): # Executions.
+		# Should time be measured? Open Writer and activate the timer.
+		if self.measure_time:
+			self.execTimeWriter = open(self.path_execTimeData,  "w")
+			timer               = timeit.Timer(lambda: self.evolve())
+			duration 			= 0
+		
+		# Execute n times.
+		for _ in range(n_exec):
 			self.init()
 			if self.measure_time:
 				duration = timer.timeit(number=1) # Measure self.evolve().
+				self.writeExecTime(duration)
 			else: 
 				self.evolve()
-			self.writeGBest()
-			self.writeExecTime(duration)
 
-		self.closeLoggers()
+			self.writeGBest()
+			if self.measure_time == False:
+				self.closeLoggers()
+
+		# Close writers
+		if self.measure_time == True:
+			self.execTimeWriter.close()
 		self.gBestWriter.close()
-		self.execTimeWriter.close()
+		
 
 	# INITIALIZE SWARM #########################################################
 	def init(self):
@@ -205,15 +214,14 @@ class Swarm():
 
 	# INITIALIZE LOGGERS
 	def initLoggers(self):
-		self.closeLoggers()
-		self.gbestLogger = open(self.path_gbestLog, "w")
-		self.agentLogger = open(self.path_agentLog, "w")
-		#self.movLogger  = open(self.path_movLog,   "w")
-
-		if (self.measure_time):
+		if self.measure_time:
 			self.logIteration  = lambda:       None  # Do nothing
 			self.logAgent      = lambda agent: None  # Do nothing
 			self.logGlobalBest = lambda:       None  # Do nothing
+		else: # Activate loggers.
+			self.gbestLogger = open(self.path_gbestLog, "w")
+			self.agentLogger = open(self.path_agentLog, "w")
+		#self.movLogger  = open(self.path_movLog,   "w")
 
 	# CLOSE LOGGERS
 	def closeLoggers(self):
